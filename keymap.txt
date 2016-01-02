@@ -1,0 +1,35 @@
+# Key layout as viewed on palm side.  layout by
+#
+#             finger tips
+#             middle joint
+# inner palm, base joint, outer palm
+#
+#
+# Right hand keys
+#   Letter mode
+    a e i o         
+    u p q v         
+SPC h j k l MDS
+#   Number mode
+    2 3 4 5
+    % @ # ^
+1   * * * * MDS
+#   Punctuation mode
+   . - " _
+   : / * !
+,  } [ ] \ MDS
+
+# Left hand keys:
+#   Letter mode
+    s t m n
+    c d f g
+r   b w x y z
+#   Number mode
+    7 8 9 0
+      ` ~ * *
+6   * * * * MDS
+#   Punctuation mode
+    ) ( ; =
+    ? $ > {
+\   + | & < MDS
+
