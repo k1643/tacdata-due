@@ -87,6 +87,9 @@ void printByte(byte b) {
 }
 
 void printInputs(const byte hand, const int mode, const byte a, const byte b) {
+  if (a == 0 and b == 0) {
+    return;  
+  }
   if (hand == HAND_RIGHT) {
     Serial.print("Right ");
   } else if (hand == HAND_LEFT) {
@@ -220,28 +223,19 @@ int toKeyIndex(const byte b) {
   }  
 }
 
-/* Map tacdata code from MCP23017 I/O register A to keyboard character. */
-int tac2keyA(const byte a) {
-  const int idx = toKeyIndex(a) - 1; // Port A 0x01 not used on glove
-  if (idx >= 0) {
-    const int c = right_hand_keys[mode][idx];
-    if (c == MDS) {
-      mode = (mode + 1) % 3;
-      return -1;
-    } else {
-      return c;
-    }
-  } else {
-    return -1; 
-  }
-}
+/* Map tacdata code from MCP23017 I/O register A to keyboard character. 
 
-/* Map tacdata code from MCP23017 I/O register B to keyboard character. */
-int tac2keyB(const byte b) {
-  const int idx = toKeyIndex(b) + 7; // Port A 0x01 not used on glove
-  if (idx >= 7) {
-    const int c = right_hand_keys[mode][idx];
-    if (c == MDS) {
+   reg: port GPIOA or GPIOB
+   v:   port's register value
+*/
+int touch2key(const byte hand, const byte reg, const byte v, int** keys) {
+  int idx = toKeyIndex(v);
+  if (reg == GPIOB) {
+    idx += 8;  
+  }
+  if (idx >= 0) {
+    const int c = keys[mode][idx];
+    if (c == MDS) { // mode switch
       mode = (mode + 1) % 3;
       return -1;
     } else {
@@ -249,7 +243,7 @@ int tac2keyB(const byte b) {
     }
   } else {
     return -1; 
-  }
+  }  
 }
 
 void sendKey(const int c) {
@@ -272,8 +266,9 @@ void contactsRight() {
  
   printInputs(HAND_RIGHT, mode, inputsA, inputsB);
   
-  sendKey(tac2keyA(inputsA));    // send USB Keyboard key
-  sendKey(tac2keyB(inputsB));
+  // send USB Keyboard key
+  sendKey(touch2key(HAND_RIGHT, GPIOA, inputsA, (int **)right_hand_keys));
+  sendKey(touch2key(HAND_RIGHT, GPIOB, inputsB, (int **)right_hand_keys));
 }
 
 void contactsLeft() {
@@ -282,8 +277,9 @@ void contactsLeft() {
  
   printInputs(HAND_LEFT, mode, inputsA, inputsB);
   
-  sendKey(tac2keyA(inputsA));    // send USB Keyboard key
-  sendKey(tac2keyB(inputsB));
+  // send USB Keyboard key
+  sendKey(touch2key(HAND_LEFT, GPIOA, inputsA, (int **)left_hand_keys));
+  sendKey(touch2key(HAND_LEFT, GPIOB, inputsB, (int **)left_hand_keys));
 }
 
 /* the setup function runs once when you press reset or power the board */
