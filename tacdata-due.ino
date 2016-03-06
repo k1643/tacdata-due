@@ -44,14 +44,17 @@
 #define GPIOA    0x12   // Port value. Write to change, read to obtain value
 #define GPIOB    0x13
 
-#define I2C_RIT   0x20 // address of right hand I2C MCP23017 chip
-#define I2C_LFT   0x21 // address of left hand I2C MCP23017 chip
+#define I2C_RIT   0x27 // address of right hand I2C MCP23017 chip
+#define I2C_LFT   0x20 // address of left hand I2C MCP23017 chip
 
 #define ONBOARD_LED 13    // pin 13
 
 #define MODE_LETTER 0
 #define MODE_NUMBER 1
 #define MODE_PUNCT  2
+
+#define HAND_RIGHT  0
+#define HAND_LEFT   1
 
 // globals
 int mode = MODE_LETTER;
@@ -83,7 +86,14 @@ void printByte(byte b) {
   Serial.print(s);
 }
 
-void printInputs(const int mode, const byte a, const byte b) {
+void printInputs(const byte hand, const int mode, const byte a, const byte b) {
+  if (hand == HAND_RIGHT) {
+    Serial.print("Right ");
+  } else if (hand == HAND_LEFT) {
+    Serial.print("Left ");
+  } else {
+    Serial.print("Hand Unknown ");
+  }
   Serial.print("mode ");
   switch (mode) {
   case MODE_LETTER:
@@ -256,6 +266,26 @@ byte readRegister(const int chip, const byte reg) {
   return Wire.read();
 }
 
+void contactsRight() {
+  byte inputsA = readRegister(I2C_RIT, GPIOA);            
+  byte inputsB = readRegister(I2C_RIT, GPIOB);
+ 
+  printInputs(HAND_RIGHT, mode, inputsA, inputsB);
+  
+  sendKey(tac2keyA(inputsA));    // send USB Keyboard key
+  sendKey(tac2keyB(inputsB));
+}
+
+void contactsLeft() {
+  byte inputsA = readRegister(I2C_LFT, GPIOA);            
+  byte inputsB = readRegister(I2C_LFT, GPIOB);
+ 
+  printInputs(HAND_LEFT, mode, inputsA, inputsB);
+  
+  sendKey(tac2keyA(inputsA));    // send USB Keyboard key
+  sendKey(tac2keyB(inputsB));
+}
+
 /* the setup function runs once when you press reset or power the board */
 void setup() {
   // initialize digital pin 13 as an output for status.
@@ -268,7 +298,9 @@ void setup() {
   Wire.begin(); // wake up I2C bus
  
   expanderWriteBoth(I2C_RIT, GPPUA, 0xFF);   // enable pull-up resistor for switch - both ports
+  expanderWriteBoth(I2C_LFT, GPPUA, 0xFF);
   expanderWriteBoth(I2C_RIT, IOPOLA, 0xFF);  // invert polarity of signal - both ports 
+  expanderWriteBoth(I2C_LFT, IOPOLA, 0xFF); 
  
   Keyboard.begin();
   
@@ -282,14 +314,9 @@ void loop() {
    // show status on LED
   digitalWrite(ONBOARD_LED, HIGH);
   
-  byte inputsA = readRegister(I2C_RIT, GPIOA);            
-  byte inputsB = readRegister(I2C_RIT, GPIOB);
- 
-  printInputs(mode, inputsA, inputsB);
-  
-  sendKey(tac2keyA(inputsA));    // send USB Keyboard key
-  sendKey(tac2keyB(inputsB));
-               
+  contactsRight();
+  contactsLeft();
+                 
   digitalWrite(ONBOARD_LED, LOW); 
   delay(200); // for debounce
 }
