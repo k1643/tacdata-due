@@ -252,10 +252,15 @@ void sendKey(const int c) {
   }  
 }
 
-byte readRegister(const int chip, const byte reg) {
-  Wire.beginTransmission(chip); // chip address
-  Wire.write(reg); // set MCP23017 memory pointer to GPIOA or GPIOB address
-  Wire.endTransmission();
+byte readRegister(const byte chip, const byte reg) {
+  // Begin a transmission to the I2C slave device with the given address
+  Wire.beginTransmission(chip);   // chip address.
+  Wire.write(reg);               // set MCP23017 memory pointer to GPIOA or GPIOB address
+  const byte status = Wire.endTransmission();        // transmit write() bytes
+  if (status != 0) {
+    // error.  assume no chip connected.
+    return 0;  
+  }
   Wire.requestFrom(chip, 1); // request one byte of data from MCP20317
   return Wire.read();
 }
@@ -291,11 +296,12 @@ void setup() {
   // the port over USB.  go to menu "Tools > Serial Monitor" to open
   // the monitor.
   Serial.begin(9600); // https://www.arduino.cc/en/Reference/Serial
-  Wire.begin(); // wake up I2C bus
+  Wire.begin(); // wake up I2C bus as master
  
   expanderWriteBoth(I2C_RIT, GPPUA, 0xFF);   // enable pull-up resistor for switch - both ports
+  expanderWriteBoth(I2C_RIT, IOPOLA, 0xFF);  // invert polarity of signal - both ports
+  
   expanderWriteBoth(I2C_LFT, GPPUA, 0xFF);
-  expanderWriteBoth(I2C_RIT, IOPOLA, 0xFF);  // invert polarity of signal - both ports 
   expanderWriteBoth(I2C_LFT, IOPOLA, 0xFF); 
  
   Keyboard.begin();
