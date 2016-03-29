@@ -118,7 +118,11 @@ void printInputs(const byte hand, const int mode, const byte a, const byte b) {
   printByte(b);
   Serial.println();
 }
- 
+
+/*
+ map glove contact indexes to key codes.  keyboard code constants at
+ https://www.arduino.cc/en/Reference/KeyboardModifiers
+ */
 #define SPC ' '     // SPACE
 #define MDS 129     // mode switch   
 int left_hand_keys[][16] = {
