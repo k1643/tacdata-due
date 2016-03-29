@@ -50,8 +50,8 @@
 #define ONBOARD_LED 13    // pin 13
 
 #define MODE_LETTER 0
-#define MODE_NUMBER 1
-#define MODE_PUNCT  2
+#define MODE_PUNCT  1
+#define MODE_NUMBER 2
 
 #define HAND_RIGHT  0
 #define HAND_LEFT   1
@@ -102,11 +102,11 @@ void printInputs(const byte hand, const int mode, const byte a, const byte b) {
   case MODE_LETTER:
     Serial.print("LETTER");
     break;
-  case MODE_NUMBER:
-    Serial.print("NUMBER");
-    break;
   case MODE_PUNCT:
     Serial.print("PUNCT");
+    break;
+  case MODE_NUMBER:
+    Serial.print("NUMBER");
     break;
   default:
     Serial.print("invalid:");
@@ -145,52 +145,17 @@ void printInputs(const byte hand, const int mode, const byte a, const byte b) {
  
  */
  
- /*
-  14 contacts per hand.
-  14 contacts * 2 hands * 3 modes - 1 mode contact = 83 keys.
-  
-  zareason keyboard has 86 keys.
-  
-  3 modes: 
-    1) letter
-    2) number, punctuation
-    3) function
-    
-  14 contacts:
-    3 middle, 3 index, inner palm, 3 ring, 3 pinky, outer palm
-    
- */
 #define SPC ' '     // SPACE
-#define BS '\b'     // BACKSPACE
-#define MDS 129     // mode switch
-// TODO: BKS, ENTER, TAB, SHIFT
-// ESC, F1-F12, PageUp, PageDwn, arrow (up, down, right, left),
-// CTRL, ALT, DEL
-int right_hand_keys[][14] = {
-  {SPC, 'h', 'u', 'a',         // inner palm, index finger
-        'j', 'p', 'e',         // middle finger
-        'i', 'q', 'k',         // ring finter
-        'o', 'r', 'l', MDS},   // pinky, outer palm
-  {'1', '*', '%', '2', 
-        '*', '@', '3',
-        '4', '#', '*',
-        '5', '^', '*', MDS},
-  {',', '}', ':', '.',
-        '[', '/', '-',
-        '"', '*', ']',
-        '_', '!', '\\', MDS}
+#define MDS 129     // mode switch   
+int left_hand_keys[][16] = {
+  {-1, 'v', 'b', 'c', 's', 'w', 'd', 't', 'm', 'f', 'x', 'n', 'g', 'y', 'z', -1},
+  {-1, '6', KEY_LEFT_ALT},
+  {}
 };
-int left_hand_keys[][14] = {
-  {'r', 'b', 'c', 's',
-        'w', 'd', 't',
-        'm', 'f', 'x', 
-        'n', 'g', 'y', 'z'},
-   {'6', '*' ,'`', '7',
-         '*', '~', '8',
-         '*', '*', '9',
-         '*', '*', '0', MDS},
-   {'\'', '+', '?', ')',
-         '|', '$', '&', '<', MDS}
+int right_hand_keys[][16] = {
+  {},
+  {},
+  {}
 };
 
 /*
@@ -223,15 +188,27 @@ int toKeyIndex(const byte b) {
   }  
 }
 
-/* Map tacdata code from MCP23017 I/O register A to keyboard character. 
+int toKeyIndexByPort(const byte b, const byte port) {
+  int idx = toKeyIndex(b);
+  if (idx < 0) {
+    return idx;  // indicates no key selected  
+  }
+  if (port == GPIOA) {
+    return idx;
+  } else {
+    return idx + 8;
+  }
+}
+
+/* Map tacdata code from MCP23017 I/O register to keyboard character. 
 
    reg: port GPIOA or GPIOB
    v:   port's register value
 */
 int touch2key(const byte hand, const byte reg, const byte v, int** keys) {
-  int idx = toKeyIndex(v);
-  if (reg == GPIOB) {
-    idx += 8;  
+  int idx = toKeyIndexByPort(v, reg);
+  if (idx < 0) {
+    return -1;
   }
   if (idx >= 0) {
     const int c = keys[mode][idx];
@@ -249,6 +226,8 @@ int touch2key(const byte hand, const byte reg, const byte v, int** keys) {
 void sendKey(const int c) {
   if (c > 0) {
     Keyboard.write(c);
+    Serial.write(c);
+    Serial.println();
   }  
 }
 
