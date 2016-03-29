@@ -118,32 +118,6 @@ void printInputs(const byte hand, const int mode, const byte a, const byte b) {
   printByte(b);
   Serial.println();
 }
-
-/*
- Right hand keys: index and middle finger mapped to port A, ring and pinky 
- mapped to port B.
- 
- pin  idx contact
- ----------------
- GPA7  7  middle tip
- GPA6  6  middle center
- GPA5  5  middle base
- GPA4  4  index tip
- GPA3  3  index center
- GPA2  2  index base
- GPA1  1  inner palm
- GPA0  0  unused
- 
- GPB0  0  ring tip
- GPB1  1  ring center
- GPB2  2  ring base
- GPB3  3  pinky tip
- GPB4  4  pinky center
- GPB5  5  pinky base
- GPB6  6  outer palm
- GPB7  7  unused
- 
- */
  
 #define SPC ' '     // SPACE
 #define MDS 129     // mode switch   
@@ -155,9 +129,8 @@ int left_hand_keys[][16] = {
 int right_hand_keys[][16] = {
   {-1, MDS, 'l', 'r', 'o', 'k', 'q', 'i', 'e', 'p', 'j', KEY_RETURN, 'a', 'u', 'h', SPC},
   {-1, MDS, '>', '=', '+', '$', '_', '-', '.', ':', '}', KEY_LEFT_SHIFT, ',', ';', '{', KEY_BACKSPACE},
-  {-1, MDS}
+  {-1, MDS, KEY_RIGHT_ARROW, '@', '5', KEY_LEFT_ARROW, '%', '4', '3', '>', KEY_DELETE, '*', '2', '<',  KEY_LEFT_CTRL, '1'}
 };
-
 /*
  closing a contact selects a bit in a port's byte register.  Convert the
  selected bit to a index into the key array. return 0-7 for selections.
