@@ -153,9 +153,9 @@ int left_hand_keys[][16] = {
   {-1, '6', KEY_LEFT_ALT, '-', '7', KEY_ESC, '`', '8', '9', KEY_UP_ARROW, KEY_DOWN_ARROW, '0', KEY_INSERT, KEY_LEFT_GUI, SPC, -1}
 };
 int right_hand_keys[][16] = {
-  {},
-  {},
-  {}
+  {-1, MDS, 'l', 'r', 'o', 'k', 'q', 'i', 'e', 'p', 'j', KEY_RETURN, 'a', 'u', 'h', SPC},
+  {-1},
+  {-1}
 };
 
 /*
